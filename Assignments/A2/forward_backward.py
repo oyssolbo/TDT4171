@@ -9,32 +9,33 @@ from backward import backward
 def forward_backward():
   # Initiating memory
   xf = np.zeros((uw_param.z.shape[0], 2))
-  for i in range(2):
+  for i in range(uw_param.x0.shape[1]):
     xf[0,i] = uw_param.x0[i]
 
   xs = np.zeros_like(xf) 
   xb = np.ones_like(xf)
 
-  # Calculating the forward pass
   for idx, _ in enumerate(xf):
-    if idx == 0:
-      known_idx = 0
-    else:
-      known_idx = idx - 1
-    xf[idx,:] = forward(idx, known_idx, xf[known_idx]).T
-  
-  # Calculating the backward pass
-  for idx, _ in enumerate(xb):
-    xb[idx,:] = backward(idx, uw_param.z.shape[0] - 1).T
+    # Calculating forward and backward pass
+    xf[idx,:] = forward(idx).T
+    xb[idx,:] = backward(idx + 1, uw_param.z.shape[0] - 1).T
 
-  # Calculating the backwards pass
-  for i in range(xs.shape[0] - 1, -1, -1):
-    xf_xb = np.array([xf[i, 0] * xb[i, 0], xf[i, 1] * xb[i, 1]])
-    xs[i] = xf_xb / xf_xb.sum(axis=0)
+    xf_xb = np.array([xf[idx, 0] * xb[idx, 0], xf[idx, 1] * xb[idx, 1]])
+    xs[idx] = xf_xb / xf_xb.sum(axis=0)
 
   return xs
 
 if __name__ == '__main__':
   xs = forward_backward()
   print(xs)
+
+"""
+Something is a bit wrong with my method, for the first couple of iterations.
+By comparing the values to the expected results at 
+
+https://en.wikipedia.org/wiki/Forward%E2%80%93backward_algorithm
+
+one can see that there is a disagreement for the first value. I cannot 
+understand why this is only for the first value, and not the other values. 
+"""
 
