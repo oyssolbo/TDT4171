@@ -6,9 +6,12 @@ from parameters import UmbrellaWorldParameters as uw_param
 from forward import forward
 from backward import backward
 
-def forward_backward():
+def forward_backward(min_idx: 'int', max_idx: 'int')->'ndarray':
+  if min_idx > max_idx or min_idx < 0 or max_idx >= uw_param.z.shape[0]:
+    return np.empty((uw_param.z.shape[0], 2))
+
   # Initiating memory
-  xf = np.zeros((uw_param.z.shape[0], 2))
+  xf = np.zeros((max_idx+1, 2))
   for i in range(uw_param.x0.shape[1]):
     xf[0,i] = uw_param.x0[i]
 
@@ -17,16 +20,19 @@ def forward_backward():
 
   for idx, _ in enumerate(xf):
     # Calculating forward and backward pass
-    xf[idx,:] = forward(idx).T
-    xb[idx,:] = backward(idx + 1, uw_param.z.shape[0] - 1).T
+    xf[idx,:] = forward(curr_idx=idx, min_idx=min_idx).T
+    xb[idx,:] = backward(curr_idx=idx+1, max_idx=max_idx).T
 
-    xf_xb = np.array([xf[idx, 0] * xb[idx, 0], xf[idx, 1] * xb[idx, 1]])
+    xf_xb = np.array([xf[idx, i] * xb[idx, i] for i in range(xf.shape[1])]).T 
     xs[idx] = xf_xb / xf_xb.sum(axis=0)
 
   return xs
 
 if __name__ == '__main__':
-  xs = forward_backward()
+  xs = forward_backward(min_idx=0, max_idx=1)
+  print(xs)
+
+  xs = forward_backward(min_idx=0, max_idx=uw_param.z.shape[0]-1)
   print(xs)
 
 """
