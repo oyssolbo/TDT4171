@@ -22,6 +22,7 @@ def forward_backward(min_idx: 'int', max_idx: 'int')->'ndarray':
     # Calculating forward and backward pass
     xf[idx,:] = forward(curr_idx=idx, min_idx=min_idx).T
     xb[idx,:] = backward(curr_idx=idx+1, max_idx=max_idx).T
+    print((idx + 2, ":", max_idx + 1, xb[idx,:]))
 
     xf_xb = np.array([xf[idx, i] * xb[idx, i] for i in range(xf.shape[1])]).T 
     xs[idx] = xf_xb / xf_xb.sum(axis=0)

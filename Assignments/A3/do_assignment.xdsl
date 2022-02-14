@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This network was created in GeNIe Academic, which can be used for academic teaching and research purposes only -->
+<smile version="1.0" id="Network1" numsamples="10000" discsamples="10000">
+	<nodes>
+		<cpt id="Mental_health">
+			<state id="Ill" />
+			<state id="Meh" />
+			<state id="Normal" />
+			<probabilities>0.25 0.6 0.15</probabilities>
+		</cpt>
+		<cpt id="Enjoyment_of_the_course">
+			<state id="EnjoyIt" />
+			<state id="HateIt" />
+			<parents>Mental_health</parents>
+			<probabilities>0.01 0.99 0.65 0.35 0.85 0.15</probabilities>
+		</cpt>
+		<cpt id="Free_time_at_university">
+			<state id="Yes" />
+			<state id="No" />
+			<probabilities>0.1 0.9</probabilities>
+		</cpt>
+		<cpt id="Free_time_at_work">
+			<state id="Yes" />
+			<state id="No" />
+			<probabilities>0.3 0.7</probabilities>
+		</cpt>
+		<cpt id="Has_time">
+			<state id="Yes" />
+			<state id="No" />
+			<parents>Free_time_at_university Free_time_at_work</parents>
+			<probabilities>0.95 0.05000000000000004 0.6 0.4 0.15 0.85 0.025 0.975</probabilities>
+		</cpt>
+		<cpt id="Prioitizing_the_course">
+			<state id="Yes" />
+			<state id="No" />
+			<parents>Free_time_at_university Enjoyment_of_the_course</parents>
+			<probabilities>0.9 0.09999999999999998 0.35 0.65 0.4 0.6 0.1 0.9</probabilities>
+		</cpt>
+		<cpt id="Motivation">
+			<state id="Motivated" />
+			<state id="NotMotivated" />
+			<parents>Prioitizing_the_course Mental_health</parents>
+			<probabilities>0.3 0.7 0.7 0.3 0.95 0.05000000000000004 0.05 0.95 0.3 0.7 0.5 0.5</probabilities>
+		</cpt>
+		<cpt id="Amount_of_learning">
+			<state id="Lot" />
+			<state id="Something" />
+			<state id="Nothing" />
+			<parents>Motivation Prioitizing_the_course</parents>
+			<probabilities>0.95 0.05 0 0.45 0.4 0.15 0.6 0.3 0.1 0.2 0.5 0.3</probabilities>
+		</cpt>
+		<cpt id="How_well_I_think_I_can_do_the_assignment">
+			<state id="Good" />
+			<state id="Alright" />
+			<state id="Bad" />
+			<parents>Prioitizing_the_course Has_time Mental_health</parents>
+			<probabilities>0.25 0.6 0.15 0.5 0.45 0.05 0.9 0.1 0 0.1 0.5 0.4 0.35 0.4 0.25 0.85 0.14 0.01 0.05 0.4 0.5499999999999999 0.3 0.4 0.2999999999999999 0.6 0.3 0.09999999999999998 0.025 0.35 0.625 0.15 0.4 0.45 0.4 0.5 0.09999999999999998</probabilities>
+		</cpt>
+		<cpt id="How_I_think_the_exam_preparations_will_go">
+			<state id="Good" />
+			<state id="Alright" />
+			<state id="Poor" />
+			<parents>Amount_of_learning How_well_I_think_I_can_do_the_assignment</parents>
+			<probabilities>0.95 0.04 0.01 0.93 0.05 0.01999999999999995 0.9 0.07000000000000001 0.02999999999999997 0.5 0.45 0.04999999999999999 0.45 0.5 0.05000000000000004 0.35 0.5 0.15 0.1 0.25 0.65 0.075 0.2 0.7250000000000001 0.05 0.1 0.85</probabilities>
+		</cpt>
+		<cpt id="Satisfaction">
+			<state id="Satisfied" />
+			<state id="NotSatisfied" />
+			<parents>Amount_of_learning How_I_think_the_exam_preparations_will_go</parents>
+			<probabilities>0.95 0.05000000000000004 0.9 0.09999999999999998 0.85 0.15 0.6 0.4 0.5 0.5 0.4 0.6 0.01 0.99 0.005 0.995 0.001 0.999</probabilities>
+		</cpt>
+		<decision id="Do_the_assignment_2">
+			<state id="Fully" />
+			<state id="Partly" />
+			<state id="Nothing" />
+		</decision>
+		<utility id="Do_the_assignment">
+			<parents>Has_time Motivation Satisfaction Do_the_assignment_2</parents>
+			<utilities>20 20 20 12.5 12.5 12.5 10 10 10 2.5 2.5 2.5 17.5 17.5 17.5 10 10 10 7.5 7.5 7.5 0 0 0</utilities>
+		</utility>
+	</nodes>
+	<extensions>
+		<genie version="1.0" app="GeNIe 3.0.6518.0 ACADEMIC" name="Network1">
+			<node id="Has_time">
+				<name>Has time</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>589 600 645 635</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Motivation">
+				<name>Motivation</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>792 505 922 583</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Free_time_at_work">
+				<name>Free time at work</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>290 614 385 673</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Free_time_at_university">
+				<name>Free time at university</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>295 525 377 576</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Do_the_assignment">
+				<name>Do the assignment</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>994 730 1095 756</position>
+				<barchart active="true" width="128" height="72" />
+			</node>
+			<node id="Enjoyment_of_the_course">
+				<name>Enjoyment of the course</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>352 271 443 327</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Prioitizing_the_course">
+				<name>Prioitizing the course</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>531 387 633 450</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="How_I_think_the_exam_preparations_will_go">
+				<name>How I think the exam preparations will go</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>1099 282 1231 380</position>
+				<barchart active="true" width="128" height="72" />
+			</node>
+			<node id="How_well_I_think_I_can_do_the_assignment">
+				<name>How well I think I can do the assignment</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>767 138 879 208</position>
+				<barchart active="true" width="128" height="72" />
+			</node>
+			<node id="Satisfaction">
+				<name>Satisfaction</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>1026 459 1133 502</position>
+				<barchart active="true" />
+			</node>
+			<node id="Mental_health">
+				<name>Mental health</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>492 123 600 190</position>
+				<barchart active="true" width="128" height="72" />
+			</node>
+			<node id="Amount_of_learning">
+				<name>Amount of learning</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>787 314 881 392</position>
+				<barchart active="true" width="128" height="72" />
+			</node>
+			<node id="Do_the_assignment_2">
+				<name>Do the assignment</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>1296 674 1397 700</position>
+			</node>
+		</genie>
+	</extensions>
+</smile>
