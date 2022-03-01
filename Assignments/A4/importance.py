@@ -1,7 +1,7 @@
 import numpy as np
 import nodes
 
-from random import randint
+import random
 
 class Importance:
   def random(
@@ -9,10 +9,11 @@ class Importance:
       data_node_list : list
     ) -> nodes.DataNode:
     """
-    Allocates a random number for each attribute, and return the 
+    Randomly selects an attribute to separate on  
     """
-
-    return 0
+    assert len(data_node_list) > 0
+    assert data_node_list[0].get_data().reshape(1,-1).shape[1] > 0
+    return random.randint(0, (data_node_list[0].get_data().reshape((1,-1))).shape[1] - 1)
 
   def expected_information(self):
     """
