@@ -1,5 +1,6 @@
 import os
 import sys
+from attr import attrib
 
 import numpy as np
 import graphviz
@@ -14,8 +15,8 @@ from numpy import ndarray
 class DecisionTree:
   def __init__(
         self,
-        train_data_csv  : TextIO,
-        test_data_csv   : TextIO
+        train_data_csv          : TextIO,
+        test_data_csv           : TextIO,
       ) -> None:
 
     self.training_nodes = self.extract_data(train_data_csv)
@@ -23,7 +24,7 @@ class DecisionTree:
 
   def train_decision_tree(
         self,
-        importance_func : Callable  
+        importance_func : Callable
       ) -> None:
     """
     Interface for training the decision tree 
@@ -75,8 +76,9 @@ class DecisionTree:
       class_arr = np.zeros((1, (len(data_node_list)))).reshape((1, -1))
       for (idx, node) in enumerate(data_node_list):
         class_arr[0, idx] = node.get_type()
+      print(class_arr)
 
-      if not np.all(class_arr == class_arr[0]):
+      if not np.all(class_arr == class_arr[0,0]):
         return (False, None) # Last argument contains no information in this case
 
       # Create a node with correct type
@@ -100,31 +102,56 @@ class DecisionTree:
 
       if not current_data_node_list:
         # examples-list is empty
-        # This is valid, since one removes a node from the data-list for each
-        # invokation
+        print("not current_data_node_list")
         return plurarity_node(prev_data_node_list)
       elif has_common_class:
+        # SO occurs here!
+        print("has_common_class")
         return common_node
-      elif not current_data_node_list[0].get_data():
+      elif current_data_node_list[0].get_data().reshape((1, -1)).shape[1] == 0:
         # attributes-list is empty
+        print("not current_data_node_list[0].get_data()")
         return plurarity_node(current_data_node_list)
       else:
-        # Calculate the best attribute
-        A = importance_func(current_data_node_list)
+        # Calculate the node with the best attribute
+        # attribute = importance_func(current_data_node_list)
+        attribute = importance_func(current_data_node_list)
 
-        # Create a new tree originating from the best node
+        root_node = nodes.DataNode(
+          data=np.empty_like(current_data_node_list[0].get_data()),
+          node_type=None,
+          children=[]
+        )
 
-        # Iterate over all values from the attribute
-        for val in A.get_data():
-          # Must find out what to do here with the values
+        # Using prior knowledge that the minimum data is 1 and the maximum
+        # data is 2
+        min_val = 1
+        max_val = 2
+        vals = range(min_val, max_val + 1)
 
-          # Must add the detected node as a child to the attribute
+        next_node_list = []
 
-          # What to do with the label?
-          pass
+        for val in vals: 
+          for node in current_data_node_list:
+            # Extract the nodes that match the 
+            node_data = node.get_data()
+            if node_data[attribute] == val:
+              # Add to array for further invokations
+              next_node_list.append(node)
+          
+          # Next set of recursion
+          root_node.add_child(
+            child=learn_decision_tree(
+              importance_func=importance_func,
+              current_data_node_list=next_node_list,
+              prev_data_node_list=current_data_node_list
+            ),
+            label=val
+          )
 
         # Return the root of the subtree
-        return A
+        # print(root_node)
+        return root_node
     
     learn_decision_tree(
       importance_func=importance_func,
@@ -158,13 +185,14 @@ if __name__ == '__main__':
   train_data = os.path.join(sys.path[0], 'data/train.csv')
   test_data = os.path.join(sys.path[0], 'data/test.csv')
 
-  importance_func = importance.Importance.random
+  importance_class = importance.Importance()
+  random_importance_func = lambda x : importance_class.random(x)
 
-  tree = DecisionTree(
+  random_tree = DecisionTree(
     train_data_csv=train_data, 
     test_data_csv=test_data
   )
-  tree.train_decision_tree(importance_func=importance_func)
+  random_tree.train_decision_tree(importance_func=random_importance_func)
 
 
 
