@@ -1,0 +1,10 @@
+During this assignment, one should develop a decision tree
+using two different kinds of importance functions:
+  1. Random importance 
+  2. 
+
+TODO:
+  1. Create decision-tree algorithm
+  2. Create the importance-functions
+  3. 
+
