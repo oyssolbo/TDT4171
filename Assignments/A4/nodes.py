@@ -20,18 +20,16 @@ class DataNode:
   def get_data(self) -> ndarray:
     return self.data
 
+  def set_data(
+        self, 
+        data : ndarray
+      ) -> None:
+    self.data = data
+
   def add_child(
         self, 
         child : 'DataNode',
         label : int
       ) -> None:
     self.children.append((child, label))
-
-# class AttributeNode:
-#   def __init__(
-#         self,
-#         parent_node         = None,
-#         children    : list  = [],
-
-#       ) -> None:
-#     pass
+    
