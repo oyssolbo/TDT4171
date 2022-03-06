@@ -339,6 +339,10 @@ class DecisionTree:
       # Start from the root for all test-nodes
       # Get a leaf node 
       leaf_node = get_matching_leaf_node(root_node=self.__root_node, test_node=test_node)
+
+      if leaf_node is None:
+        # No matching leaf node found
+        continue
       
       # Once a leaf-node is found, we must test if the detected value is correct
       tree_type = leaf_node.get_type()
