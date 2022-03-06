@@ -15,7 +15,10 @@ class Importance:
     assert data_node_list[0].get_data().reshape(1,-1).shape[1] > 0
     return random.randint(0, (data_node_list[0].get_data().reshape((1,-1))).shape[1] - 1)
 
-  def expected_information(self):
+  def expected_information(
+      self,
+      data_node_list : list
+    ) -> nodes.DataNode:
     """
     Using the information gain from a given attribute, to allocate the importance
     function for said attribute 
