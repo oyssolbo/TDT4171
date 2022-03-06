@@ -169,7 +169,7 @@ class DecisionTree:
               # But why would some nodes achieve no data and still be included?
 
               # This problem was solved after using the copy-function, which indicates that 
-              # the problem was caused by  
+              # the problem was caused by references
 
               warnings.warn("Node contains no data!")
               continue
