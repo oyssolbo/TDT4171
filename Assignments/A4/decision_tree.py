@@ -148,7 +148,7 @@ class DecisionTree:
 
         # Calculate the node with the best attribute
         # attribute = importance_func(current_data_node_list)
-        attribute = importance_func(current_data_node_list)
+        attribute = importance_func(current_data_node_list[0].get_data())
 
         root_node = nodes.DataNode(
           data=np.empty_like(current_data_node_list[0].get_data()),
