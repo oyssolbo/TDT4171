@@ -392,7 +392,7 @@ if __name__ == '__main__':
     train_data_csv=train_data, 
     test_data_csv=test_data
   )
-  expected_information_tree.train_decision_tree(importance_func=random_importance_func)
+  expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
   expected_information_tree.document_tree(root_node=None, comment="Decision tree with expected information importance")
   expected_information_tree.test_decision_tree()
 
