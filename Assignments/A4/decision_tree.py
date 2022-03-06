@@ -50,7 +50,7 @@ class DecisionTree:
     """
 
     def plurarity_node(
-          data_node_list : list
+          data_node_list : list[nodes.DataNode]
         ) -> nodes.DataNode:
       """
       Extracts the plurarity-value of a set of examples, and determines
@@ -81,8 +81,8 @@ class DecisionTree:
       return data_node
 
     def check_classification(
-          data_node_list : list = []
-        ) -> tuple:
+          data_node_list : list[nodes.DataNode] = []
+        ) -> tuple[bool, nodes.DataNode]:
       """
       Checks the classification of the data-nodes, and determines if they 
       all have the same type
@@ -109,9 +109,9 @@ class DecisionTree:
       
     def learn_decision_tree(
           importance_func         : Callable,
-          current_data_node_list  : list      = [],
-          prev_data_node_list     : list      = [],
-          tree_depth              : int       = 0
+          current_data_node_list  : list[nodes.DataNode]  = [],
+          prev_data_node_list     : list[nodes.DataNode]  = [],
+          tree_depth              : int                   = 0
         ) -> nodes.DataNode:
       """
       Implements the decision-tree algorithm with pseudocode shown in 
@@ -148,7 +148,7 @@ class DecisionTree:
 
         # Calculate the node with the best attribute
         # attribute = importance_func(current_data_node_list)
-        attribute = importance_func(current_data_node_list[0].get_data())
+        attribute = importance_func(current_data_node_list)
 
         root_node = nodes.DataNode(
           data=np.empty_like(current_data_node_list[0].get_data()),
@@ -227,7 +227,7 @@ class DecisionTree:
 
     def get_node_name(
           node : nodes.DataNode
-        ) -> tuple:
+        ) -> tuple[str, str]:
       data_type = node.get_type()
       attribute = node.get_attribute()
       # Check for invalid combination
@@ -355,7 +355,7 @@ class DecisionTree:
   def extract_data(
         self,
         data_csv : TextIO,
-      ) -> list:
+      ) -> list[nodes.DataNode]:
     """
     Extracts the data from a csv_file and creates a set of attributes
     that are returned
@@ -392,7 +392,7 @@ if __name__ == '__main__':
     train_data_csv=train_data, 
     test_data_csv=test_data
   )
-  expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
-  expected_information_tree.document_tree(root_node=None, comment="Decision tree with expected information importance")
-  expected_information_tree.test_decision_tree()
+  # expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
+  # expected_information_tree.document_tree(root_node=None, comment="Decision tree with expected information importance")
+  # expected_information_tree.test_decision_tree()
 
