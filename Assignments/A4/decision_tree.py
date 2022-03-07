@@ -374,7 +374,7 @@ if __name__ == '__main__':
   train_data = os.path.join(sys.path[0], 'data/train.csv')
   test_data = os.path.join(sys.path[0], 'data/test.csv')
 
-  importance_class = importance.Importance()
+  importance_class = importance.Importance(min_val=1, max_val=2)
   random_importance_func = lambda x : importance_class.random(x)
   expected_information_importance_func = lambda x : importance_class.expected_information(x)
 
@@ -392,7 +392,7 @@ if __name__ == '__main__':
     train_data_csv=train_data, 
     test_data_csv=test_data
   )
-  # expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
-  # expected_information_tree.document_tree(root_node=None, comment="Decision tree with expected information importance")
-  # expected_information_tree.test_decision_tree()
+  expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
+  expected_information_tree.document_tree(root_node=None, comment="Decision tree with expected information importance")
+  expected_information_tree.test_decision_tree()
 
