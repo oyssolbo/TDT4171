@@ -1,7 +1,6 @@
 import numpy as np
 import nodes
 import random
-import warnings
 
 class Importance:
   def __init__(
