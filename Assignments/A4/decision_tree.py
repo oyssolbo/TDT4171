@@ -1,4 +1,3 @@
-from logging import root
 import os
 import sys
 
@@ -10,6 +9,9 @@ import copy
 
 import importance
 import nodes
+
+import matplotlib.pyplot as plt
+import math
 
 from typing import Callable, TextIO
 from numpy import ndarray
@@ -349,7 +351,7 @@ class DecisionTree:
       if test_node.get_type() == tree_type:
         num_correct += 1
 
-    print("Number correct {}, of {} possible. Proportion correct on test-set: {}".format(num_correct, len(test_nodes), num_correct / len(test_nodes)))
+    # print("Number correct {}, of {} possible. Proportion correct on test-set: {}".format(num_correct, len(test_nodes), num_correct / len(test_nodes)))
     return num_correct
 
   def extract_data(
@@ -378,21 +380,61 @@ if __name__ == '__main__':
   random_importance_func = lambda x : importance_class.random(x)
   expected_information_importance_func = lambda x : importance_class.expected_information(x)
 
+  num_iterations = 10
+  random_correct_arr = np.zeros(num_iterations, dtype=int)
+  expected_correct_arr = np.zeros(num_iterations, dtype=int)
+
   # Random tree
   random_tree = DecisionTree(
     train_data_csv=train_data, 
     test_data_csv=test_data
   )
-  random_tree.train_decision_tree(importance_func=random_importance_func)
-  random_tree.document_tree(root_node=None, comment="Decision tree with random importance")
-  random_tree.test_decision_tree()
 
   # Expected information tree
   expected_information_tree = DecisionTree(
     train_data_csv=train_data, 
     test_data_csv=test_data
   )
-  expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
-  expected_information_tree.document_tree(root_node=None, comment="Decision tree with expected information importance")
-  expected_information_tree.test_decision_tree()
+
+  # Iterating over the algorithm for 1000 iterations to create some data
+  for i in range(num_iterations):
+    random_tree.train_decision_tree(importance_func=random_importance_func)
+    random_tree.document_tree(root_node=None, comment="Decision tree with random importance")
+    random_result = random_tree.test_decision_tree()
+
+    expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
+    expected_information_tree.document_tree(root_node=None, comment="Decision tree with expected information importance")
+    expected_result = expected_information_tree.test_decision_tree()
+
+    # Save data temporary
+    random_correct_arr[i] = np.int64(random_result)
+    expected_correct_arr[i] = np.int64(expected_result)
+
+  # Save data permanently
+  np.savetxt(os.path.join(sys.path[0], "data/results/random_results.txt"), random_correct_arr)
+  np.savetxt(os.path.join(sys.path[0], "data/results/expected_results.txt"), expected_correct_arr)
+
+  # Calculate some statistics - but these gets totally wrong somehow??
+  random_correct_mean = np.average(random_correct_arr)
+  random_correct_var = np.var(random_correct_arr)
+
+  expected_correct_mean = np.average(random_correct_arr)
+  expected_correct_var = np.var(random_correct_arr)
+
+  # Find percentile of times where the expected is better than the random
+  num_random_better = len(random_correct_arr[random_correct_arr > expected_correct_mean])
+  print(expected_correct_arr)
+  print(expected_correct_mean)
+  # print(random_correct_arr[random_correct_arr > expected_correct_mean]) 
+
+
+  # Plot histograms
+  fig, axs = plt.subplots(2)
+  fig.suptitle("Histogram comparison for {} iterations".format(num_iterations))
+  axs[0].hist(random_correct_arr, bins=range(10, 29, 1))
+  axs[1].hist(expected_correct_arr, bins=range(10, 29, 1))
+  plt.show()
+
+
+
 
