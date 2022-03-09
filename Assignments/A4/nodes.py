@@ -1,13 +1,10 @@
 import numpy as np
 import warnings
 
-from numpy import ndarray
-from typing import Callable
-
 class DataNode:
   def __init__(
         self, 
-        data      : ndarray,
+        data      : np.ndarray,
         node_type : int,
         children  : list    = [],
         attribute : int     = None
@@ -20,28 +17,18 @@ class DataNode:
     if node_type is not None and attribute is not None:
       warnings.warn("Incorrect combination of attribute and type set")
 
-  # def __eq__(
-  #       self,
-  #       __o : object
-  #     ) -> bool:
-  #   return \
-  #         np.array_equal(self.data, __o.data) \
-  #         and self.node_type == __o.node_type \
-  #         and np.array_equal(self.children, __o.children) 
-
-
   def get_type(self) -> int:
     return self.__node_type
 
   def get_attribute(self) -> int: 
     return self.__attribute
 
-  def get_data(self) -> ndarray:
+  def get_data(self) -> np.ndarray:
     return self.__data
 
   def set_data(
         self, 
-        data : ndarray
+        data : np.ndarray
       ) -> None:
     self.__data = data
 
