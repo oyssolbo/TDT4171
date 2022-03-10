@@ -411,7 +411,7 @@ if __name__ == '__main__':
       comment="Random importance",
       id=i,
       save_tree=False,
-      show_tree=True
+      show_tree=False
     )
     random_result = random_tree.test_decision_tree()
 
@@ -421,13 +421,13 @@ if __name__ == '__main__':
       comment="Expected information importance",
       id=i,
       save_tree=False,
-      show_tree=True
+      show_tree=False
     )
     expected_result = expected_information_tree.test_decision_tree()
 
     # Save data temporary
-    random_correct_arr[i] = np.int64(random_result)
-    expected_correct_arr[i] = np.int64(expected_result)
+    random_correct_arr[i] = int(random_result)
+    expected_correct_arr[i] = int(expected_result)
 
     if i % 50 == 0:
       print(i / num_tests)
