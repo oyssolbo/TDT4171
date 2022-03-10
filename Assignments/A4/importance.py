@@ -30,7 +30,7 @@ class Importance:
 
   def expected_information(
       self,
-      data_node_list : list[nodes.DataNode]
+      data_node_list : list#[nodes.DataNode]
     ) -> int:
     """
     Using the information gain from a given attribute, to allocate the importance
