@@ -14,14 +14,6 @@ import matplotlib.pyplot as plt
 import math
 
 from typing import Callable, TextIO
-from numpy import ndarray
-
-# print(graphviz.__file__)
-# print(sys.path[0])
-
-# Having to manually add to the path while running this crap on windows...
-# Seems like it is a common problem for graphwiz...
-# os.environ["PATH"] += os.pathsep + "C:\Users\oysso\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\graphviz"
 
 class DecisionTree:
   def __init__(
@@ -43,6 +35,11 @@ class DecisionTree:
     # Showing the depth of the tree
     self.__tree_depth = 0
 
+    # Keeping track of which attribute has been removed. Otherwise, the 
+    self.__num_training_attributes = self.__training_nodes[0].get_data().shape[0]
+    self.__training_attributes_list = [*range(0, self.__num_training_attributes, 1)]
+
+
   def train_decision_tree(
         self,
         importance_func : Callable
@@ -52,7 +49,7 @@ class DecisionTree:
     """
 
     def plurarity_node(
-          data_node_list : list[nodes.DataNode]
+          data_node_list : list#[nodes.DataNode]
         ) -> nodes.DataNode:
       """
       Extracts the plurarity-value of a set of examples, and determines
@@ -83,8 +80,8 @@ class DecisionTree:
       return data_node
 
     def check_classification(
-          data_node_list : list[nodes.DataNode] = []
-        ) -> tuple[bool, nodes.DataNode]:
+          data_node_list : list = [] #[nodes.DataNode] = []
+        ) -> tuple: #[bool, nodes.DataNode]:
       """
       Checks the classification of the data-nodes, and determines if they 
       all have the same type
@@ -111,9 +108,10 @@ class DecisionTree:
       
     def learn_decision_tree(
           importance_func         : Callable,
-          current_data_node_list  : list[nodes.DataNode]  = [],
-          prev_data_node_list     : list[nodes.DataNode]  = [],
-          tree_depth              : int                   = 0
+          current_data_node_list  : list      = [],
+          prev_data_node_list     : list      = [],
+          available_attributes    : list      = [],
+          tree_depth              : int       = 0
         ) -> nodes.DataNode:
       """
       Implements the decision-tree algorithm with pseudocode shown in 
@@ -149,14 +147,20 @@ class DecisionTree:
             quit()
 
         # Calculate the node with the best attribute
-        # attribute = importance_func(current_data_node_list)
-        attribute = importance_func(current_data_node_list)
+        # The local attribute will only store the attribute observed locally, however
+        # we are interested in the global attribute, as the global attributes are 
+        # used to separate the nodes from each other. Otherwise, one will get too many
+        # syclic nodes in the resulting tree, as all local attributes will converge 
+        # onto 0, 1, 2, ... 
+        local_attribute = importance_func(current_data_node_list)
+        global_attribute = available_attributes[local_attribute]
+        available_attributes.remove(global_attribute) 
 
         root_node = nodes.DataNode(
           data=np.empty_like(current_data_node_list[0].get_data()),
           node_type=None,
           children=[],
-          attribute=attribute
+          attribute=global_attribute 
         )
 
         vals = range(self.__min_val, self.__max_val + 1)
@@ -167,34 +171,15 @@ class DecisionTree:
             # Extract the nodes that match 
             node_data = node.get_data()
             if node_data.size == 0:
-              # If the node contains no data, it means that it should not be accounted
-              # But why would some nodes achieve no data and still be included?
-
-              # This problem was solved after using the copy-function, which indicates that 
-              # the problem was caused by references
-
               warnings.warn("Node contains no data!")
               continue
-            if node_data[attribute] == val:
-              # There is a bug where the given arrays do not share the same lengths on the
-              # data-array. This means that one set together arrays of nodes with different 
-              # data-sets? Or does it mean that I have popped incorrectly? 
-              # Theory: Could it be that python is so fucking horrible, and it uses references?
-              # Whenever I pop an element, it has side-effects other places in the tree? 
-              # After using the copy-function, I did not experience this error again. 
-              
-              # But the question is why this error occurs at all?
-              # Might be due to terrible code - which wouldn't be incorrect, however one should
-              # not expect a node to occur at two different places in the tree. This implies that
-              # something about my implementation is incorrect, as a node should only be present 
-              # in a single part of the tree 
-
+            if node_data[local_attribute] == val:
               # Add to array for further invokations
               next_node_list.append(copy.copy(node))
 
           # Removing the attribute for all of the selected nodes
           for (idx, node) in enumerate(next_node_list):
-            updated_data = np.delete(node.get_data(), attribute)
+            updated_data = np.delete(node.get_data(), local_attribute)
             next_node_list[idx].set_data(updated_data)
 
           # Next set of recursion
@@ -203,6 +188,7 @@ class DecisionTree:
               importance_func=importance_func,
               current_data_node_list=next_node_list,
               prev_data_node_list=current_data_node_list,
+              available_attributes=copy.copy(available_attributes),
               tree_depth=tree_depth
             ),
             label=val
@@ -217,19 +203,23 @@ class DecisionTree:
     learn_decision_tree(
       importance_func=importance_func,
       current_data_node_list=self.__training_nodes, 
-      prev_data_node_list=[]
+      prev_data_node_list=[],
+      available_attributes=copy.copy(self.__training_attributes_list)
     )
 
 
   def document_tree(
         self,
         root_node : nodes.DataNode  = None,
-        comment   : str             = "Decision tree"
+        comment   : str             = "Decision tree",
+        id        : int             = 0,
+        save_tree : bool            = True,
+        show_tree : bool            = False
       ) -> None:
 
     def get_node_name(
           node : nodes.DataNode
-        ) -> tuple[str, str]:
+        ) -> tuple:#[str, str]:
       data_type = node.get_type()
       attribute = node.get_attribute()
       # Check for invalid combination
@@ -251,10 +241,11 @@ class DecisionTree:
 
 
     def build_documented_tree(
-        tree          : graphviz.Digraph, 
-        current_node  : nodes.DataNode, 
-        parent_node   : nodes.DataNode    = None,
-        label         : str               = ""
+        tree            : graphviz.Digraph, 
+        current_node    : nodes.DataNode, 
+        parent_node     : nodes.DataNode    = None,
+        accounted_nodes : list              = [],
+        label           : str               = ""
       ) -> graphviz.Digraph:
 
       # Create node
@@ -268,31 +259,47 @@ class DecisionTree:
 
         tree.edge(tail_name=parent_node_name, head_name=current_node_name, label=label)
 
-      # Iterate through all of the children
+      # Iterate through all of the children, but only if they are not accounted for earlier
+      # This is to prevent asyclic behaviour if a node has multiple parents
       for (child_node, val) in current_node.get_children():
-        build_documented_tree(tree=tree, current_node=child_node, label=val)         
+        child_node_name = get_node_name(node=child_node)
+        if child_node_name in accounted_nodes:
+          continue
+        
+        accounted_nodes.append(child_node_name)
+        build_documented_tree(
+          tree=tree, 
+          current_node=child_node, 
+          parent_node=current_node,
+          accounted_nodes=accounted_nodes, 
+          label=str(val)
+        )         
 
       return tree
 
     def save_tree(
         tree : graphviz.Digraph,
-        name : str,
         show : bool             = False 
       ) -> None:
-      # tree.render(view=show)
-      # Problem with the path, because python packages are hell on windows
-      pass
+      tree.render(view=show)
 
     if root_node is None and self.__root_node is None:
-      raise ValueError("No node found that is not None")
+      raise ValueError("No node found to document the tree")
 
     if root_node is None:
       root_node = self.__root_node
 
     # This method tries to document the tree using graphviz
-    tree = graphviz.Digraph(comment=comment)
-    tree = build_documented_tree(tree=tree, current_node=root_node, parent_node=None)
-    save_tree(tree, name=comment)
+    tree = graphviz.Digraph(comment=comment, filename=os.path.join(sys.path[0], "data/results/data/tree/{} id={}.gv".format(comment, id)))
+    tree = build_documented_tree(
+      tree=tree, 
+      current_node=root_node, 
+      parent_node=None,
+      accounted_nodes=[]
+    )
+    if not save_tree:
+      return
+    save_tree(tree=tree, show=show_tree)
 
   def test_decision_tree(
         self
@@ -357,7 +364,7 @@ class DecisionTree:
   def extract_data(
         self,
         data_csv : TextIO,
-      ) -> list[nodes.DataNode]:
+      ) -> list:#[nodes.DataNode]:
     """
     Extracts the data from a csv_file and creates a set of attributes
     that are returned
@@ -380,9 +387,9 @@ if __name__ == '__main__':
   random_importance_func = lambda x : importance_class.random(x)
   expected_information_importance_func = lambda x : importance_class.expected_information(x)
 
-  num_iterations = 10
-  random_correct_arr = np.zeros(num_iterations, dtype=int)
-  expected_correct_arr = np.zeros(num_iterations, dtype=int)
+  num_tests = 10 #5000
+  random_correct_arr = np.zeros(num_tests, dtype=int)
+  expected_correct_arr = np.zeros(num_tests, dtype=int)
 
   # Random tree
   random_tree = DecisionTree(
@@ -397,44 +404,75 @@ if __name__ == '__main__':
   )
 
   # Iterating over the algorithm for 1000 iterations to create some data
-  for i in range(num_iterations):
+  for i in range(num_tests):
     random_tree.train_decision_tree(importance_func=random_importance_func)
-    random_tree.document_tree(root_node=None, comment="Decision tree with random importance")
+    random_tree.document_tree(
+      root_node=None, 
+      comment="Random importance",
+      id=i,
+      save_tree=False,
+      show_tree=True
+    )
     random_result = random_tree.test_decision_tree()
 
     expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
-    expected_information_tree.document_tree(root_node=None, comment="Decision tree with expected information importance")
+    expected_information_tree.document_tree(
+      root_node=None, 
+      comment="Expected information importance",
+      id=i,
+      save_tree=False,
+      show_tree=True
+    )
     expected_result = expected_information_tree.test_decision_tree()
 
     # Save data temporary
     random_correct_arr[i] = np.int64(random_result)
     expected_correct_arr[i] = np.int64(expected_result)
 
-  # Save data permanently
-  np.savetxt(os.path.join(sys.path[0], "data/results/random_results.txt"), random_correct_arr)
-  np.savetxt(os.path.join(sys.path[0], "data/results/expected_results.txt"), expected_correct_arr)
+    if i % 50 == 0:
+      print(i / num_tests)
 
-  # Calculate some statistics - but these gets totally wrong somehow??
-  random_correct_mean = np.average(random_correct_arr)
+  # Save data permanently
+  np.savetxt(os.path.join(sys.path[0], "data/results/data/random_results.txt"), random_correct_arr)
+  np.savetxt(os.path.join(sys.path[0], "data/results/data/expected_results.txt"), expected_correct_arr)
+
+  # Calculate some statistics
+  random_correct_mean = np.mean(random_correct_arr)
   random_correct_var = np.var(random_correct_arr)
 
-  expected_correct_mean = np.average(random_correct_arr)
-  expected_correct_var = np.var(random_correct_arr)
+  expected_correct_mean = np.mean(expected_correct_arr)
+  expected_correct_var = np.var(expected_correct_arr)
 
   # Find percentile of times where the expected is better than the random
+  num_random_similar = len(random_correct_arr[random_correct_arr == expected_correct_mean])
   num_random_better = len(random_correct_arr[random_correct_arr > expected_correct_mean])
-  print(expected_correct_arr)
-  print(expected_correct_mean)
-  # print(random_correct_arr[random_correct_arr > expected_correct_mean]) 
-
 
   # Plot histograms
   fig, axs = plt.subplots(2)
-  fig.suptitle("Histogram comparison for {} iterations".format(num_iterations))
-  axs[0].hist(random_correct_arr, bins=range(10, 29, 1))
-  axs[1].hist(expected_correct_arr, bins=range(10, 29, 1))
+  fig.suptitle(
+    "Histogram comparison for {} tests.\n Random importance function similar in {} test(s) and better in {} test(s)".format(
+      num_tests,
+      num_random_similar,
+      num_random_better
+    )
+  )
+
+  axs[0].set_title(
+    "Random importance function with mean: {} and variance: {}".format(
+      '%.1f'%random_correct_mean, 
+      '%.1f'%random_correct_var
+    )
+  )
+  axs[0].hist(random_correct_arr, bins=np.arange(12,29,1))
+
+  axs[1].set_title(
+    "Expected information importance function with mean: {} and variance: {}".format(
+      '%.1f'%expected_correct_mean, 
+      '%.1f'%expected_correct_var
+    )
+  )
+  axs[1].hist(expected_correct_arr, bins=np.arange(12,29,1))
+
   plt.show()
-
-
 
 
