@@ -6,6 +6,7 @@ import graphviz
 import csv
 import warnings
 import copy
+import collections
 
 import importance
 import nodes
@@ -63,17 +64,16 @@ class DecisionTree:
         )
       else:
         # Create an array of the different classes
-        class_arr = np.zeros(len(data_node_list), dtype=int).reshape((1, -1))
+        type_arr = np.zeros(len(data_node_list), dtype=int).reshape((1, -1))
         for (idx, node) in enumerate(data_node_list):
-          class_arr[0, idx] = node.get_type()
+          type_arr[0, idx] = node.get_type()
 
         # Find the type that occurs most often
-        counts = np.bincount(class_arr[0])
-        most_common_type = np.argmax(counts)
+        most_common_type = collections.Counter(type_arr[0]).most_common(1)[0][0]
 
         # Create a node with correct type
         data_node = nodes.DataNode(
-          data=np.empty_like(data_node_list[0].get_data()),
+          data=-np.ones_like(data_node_list[0].get_data()),
           node_type=most_common_type,
           children=[]
         )
@@ -100,7 +100,7 @@ class DecisionTree:
 
       # Create a node with correct type, since all have the same type
       data_node = nodes.DataNode(
-        data=np.empty_like(data_node_list[0].get_data()),
+        data=-2*np.ones_like(data_node_list[0].get_data()),
         node_type=class_arr[0,0],
         children=[]
       )
@@ -121,7 +121,7 @@ class DecisionTree:
       if tree_depth >= self.__tree_depth:
         self.__tree_depth = tree_depth 
 
-      has_common_class, common_node = check_classification(current_data_node_list)
+      (has_common_class, common_node) = check_classification(current_data_node_list)
 
       if not current_data_node_list:
         # examples-list is empty
@@ -135,17 +135,6 @@ class DecisionTree:
         # print("not current_data_node_list[0].get_data()")
         return plurarity_node(current_data_node_list)
       else:
-        # Check that all nodes have a similar size of the data-array
-        # This is no longer necessary, as the problem was solved
-        current_data_shape = (-1,-1)
-        for node in current_data_node_list:
-          if current_data_shape == (-1,-1):
-            current_data_shape = node.get_data().shape
-            continue
-          if current_data_shape != node.get_data().shape:
-            warnings.warn("Incorrect shape between nodes!")
-            quit()
-
         # Calculate the node with the best attribute
         # The local attribute will only store the attribute observed locally, however
         # we are interested in the global attribute, as the global attributes are 
@@ -157,7 +146,7 @@ class DecisionTree:
         available_attributes.remove(global_attribute) 
 
         root_node = nodes.DataNode(
-          data=np.empty_like(current_data_node_list[0].get_data()),
+          data=-3*np.ones_like(current_data_node_list[0].get_data()),
           node_type=None,
           children=[],
           attribute=global_attribute 
@@ -186,13 +175,17 @@ class DecisionTree:
           root_node.add_child(
             child=learn_decision_tree(
               importance_func=importance_func,
-              current_data_node_list=next_node_list,
-              prev_data_node_list=current_data_node_list,
+              current_data_node_list=copy.copy(next_node_list),
+              prev_data_node_list=copy.copy(current_data_node_list),
               available_attributes=copy.copy(available_attributes),
               tree_depth=tree_depth
             ),
             label=val
           ) 
+
+        # Check that all non-leaf-nodes have correct number of children
+        num_children = len(root_node.get_children())
+        assert num_children == self.__max_val - self.__min_val + 1, "Internal nodes must have two children"
 
         # If original root, save it
         # Otherwise return the root node
@@ -220,24 +213,25 @@ class DecisionTree:
     def get_node_name(
           node : nodes.DataNode
         ) -> tuple:#[str, str]:
+
       data_type = node.get_type()
       attribute = node.get_attribute()
+
       # Check for invalid combination
       # If both the attribute not None and data_type not None, one cannot
       # know whether it is an internal node or a leaf-node
       if data_type is not None and attribute is not None:
         raise ValueError("Cannot document a tree with current_data_type and current_attribute both being defined")
       
-      # Add node to tree
       if data_type is not None:
         # Leaf node. Should not contain children
         node_name = str(data_type)
-        node_label = node_name
+        # node_label = node_name
       else:
         # Internal node. Should contain children
-        node_name = str(attribute)
-        node_label = "A" + node_name
-      return (node_name, node_label)
+        node_name = "A" + str(attribute)
+        # node_label = "A" + node_name
+      return node_name #(node_name, node_label)
 
 
     def build_documented_tree(
@@ -248,32 +242,72 @@ class DecisionTree:
         label           : str               = ""
       ) -> graphviz.Digraph:
 
+      """
+      There is something buggy about this function! It will not create correct trees, despite having 
+      correct information. Some problems with the function, are:
+        -will create syclic trees despite the nodes are not syclic
+        -will not add all of the leaf-nodes
+
+      Theory:
+        -the children have the same type - after testing: not correct theory
+
+      Observation:
+        -the nodes that are not accounted for, have only zeros as data. How can one get nodes with only
+        zeros???????????? Could just occur random
+      """
+
       # Create node
-      (current_node_name, current_node_label) = get_node_name(node=current_node)
-      tree.node(name=current_node_name, label=current_node_label)
+      current_node_name = get_node_name(node=current_node)
+      current_node_type = current_node.get_type() 
+      tree.node(name=current_node_name, label=current_node_name)
 
       # Add edges to any potential parents
       if parent_node is not None:
         # Parent is an internal node
-        (parent_node_name, _) = get_node_name(node=parent_node)
+        parent_node_name = get_node_name(node=parent_node)
 
         tree.edge(tail_name=parent_node_name, head_name=current_node_name, label=label)
 
-      # Iterate through all of the children, but only if they are not accounted for earlier
-      # This is to prevent asyclic behaviour if a node has multiple parents
+      if current_node_type is None:
+        # This test (atleast when I am testing it), is never triggered
+        # That means that all nodes contains two children each
+        assert len(current_node.get_children()) == 2, "Internal node must have two children"      
+
+        # Bad debugging code for testing that the values are different - they are different
+        # children = current_node.get_children()
+        # temp = None
+        # for (child, val) in children:
+        #   print(val)
+        #   if temp is None:
+        #     temp = val 
+        #     continue
+        #   assert val != temp, "Must be different"
+
+      # Something buggy here! 
+      # Tried to iterate through all of the children, but only if they are not accounted for earlier
+      # The thougth was to prevent syclic behaviour if a node has multiple parents
+      # recursed_nodes = []
       for (child_node, val) in current_node.get_children():
         child_node_name = get_node_name(node=child_node)
-        if child_node_name in accounted_nodes:
+        if child_node_name in accounted_nodes: 
+          # Prevent cyclic behaviour
           continue
         
-        accounted_nodes.append(child_node_name)
+        child_node_type = child_node.get_type()
+        if child_node_type is None:
+          # Only add the attributes
+          accounted_nodes.append(child_node_name)
+        
+        # recursed_nodes.append(child_node)
+
         build_documented_tree(
           tree=tree, 
           current_node=child_node, 
           parent_node=current_node,
-          accounted_nodes=accounted_nodes, 
+          accounted_nodes=accounted_nodes, # Now it is correct to use references
           label=str(val)
         )         
+      # assert len(recursed_nodes) == 2 or recursed_nodes in accounted_nodes or current_node_type is not None
 
       return tree
 
@@ -290,7 +324,10 @@ class DecisionTree:
       root_node = self.__root_node
 
     # This method tries to document the tree using graphviz
-    tree = graphviz.Digraph(comment=comment, filename=os.path.join(sys.path[0], "data/results/data/tree/{} id={}.gv".format(comment, id)))
+    tree = graphviz.Digraph(
+      comment=comment, 
+      filename=os.path.join(sys.path[0], "data/results/data/tree/{} id={}.gv".format(comment, id)),
+      strict=True)
     tree = build_documented_tree(
       tree=tree, 
       current_node=root_node, 
@@ -387,7 +424,7 @@ if __name__ == '__main__':
   random_importance_func = lambda x : importance_class.random(x)
   expected_information_importance_func = lambda x : importance_class.expected_information(x)
 
-  num_tests = 10 #5000
+  num_tests = 1 #5000
   random_correct_arr = np.zeros(num_tests, dtype=int)
   expected_correct_arr = np.zeros(num_tests, dtype=int)
 
@@ -411,7 +448,7 @@ if __name__ == '__main__':
       comment="Random importance",
       id=i,
       save_tree=False,
-      show_tree=False
+      show_tree=True
     )
     random_result = random_tree.test_decision_tree()
 
@@ -421,7 +458,7 @@ if __name__ == '__main__':
       comment="Expected information importance",
       id=i,
       save_tree=False,
-      show_tree=False
+      show_tree=True
     )
     expected_result = expected_information_tree.test_decision_tree()
 
