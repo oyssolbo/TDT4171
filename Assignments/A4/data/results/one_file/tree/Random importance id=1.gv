@@ -1,0 +1,20 @@
+// Random importance
+digraph {
+	6 [label=A6]
+	0 [label=A0]
+	6 -> 0 [label=1]
+	1.0 [label=1.0]
+	0 -> 1.0 [label=1]
+	4 [label=A4]
+	0 -> 4 [label=2]
+	3 [label=A3]
+	4 -> 3 [label=1]
+	5 [label=A5]
+	3 -> 5 [label=1]
+	1 [label=A1]
+	5 -> 1 [label=1]
+	2 [label=A2]
+	1 -> 2 [label=2]
+	2.0 [label=2.0]
+	2 -> 2.0 [label=1]
+}
