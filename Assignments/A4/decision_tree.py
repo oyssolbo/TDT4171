@@ -232,14 +232,14 @@ class DecisionTree:
         # Here there is a bug when creating the nodes. Multiple leaf-nodes are given the same name,
         # and as such, the algorithm is unable to generate multiple leaf nodes, as it cannot know which
         # to refer to. Must add a
-        node_name = str(data_type) + "_" + str(num_types[int(data_type) - 1])
+        node_label = str(data_type)
+        node_name = node_label + "_" + str(num_types[int(data_type) - 1])
         num_types[int(data_type) - 1] += 1 
-        # node_label = node_name
       else:
         # Internal node. Should contain children
         node_name = "A" + str(attribute)
-        # node_label = "A" + node_name
-      return (node_name, num_types) #(node_name, node_label)
+        node_label = node_name
+      return (node_name, node_label, num_types) #(node_name, node_label)
 
 
     def build_documented_tree(
@@ -268,14 +268,14 @@ class DecisionTree:
         num_types = [0] * (self.__max_val - self.__min_val + 1) 
 
       # Create node
-      (current_node_name, num_types) = get_node_name(node=current_node, num_types=num_types)
+      (current_node_name, current_node_label, num_types) = get_node_name(node=current_node, num_types=num_types)
       current_node_type = current_node.get_type() 
-      tree.node(name=current_node_name, label=current_node_name)
+      tree.node(name=current_node_name, label=current_node_label)
 
       # Add edges to any potential parents
       if parent_node is not None:
         # Parent is an internal node
-        (parent_node_name, _) = get_node_name(node=parent_node, num_types=[0] * (self.__max_val - self.__min_val + 1))
+        (parent_node_name, _, _) = get_node_name(node=parent_node, num_types=[0] * (self.__max_val - self.__min_val + 1))
 
         tree.edge(tail_name=parent_node_name, head_name=current_node_name, label=label)
 
@@ -299,7 +299,7 @@ class DecisionTree:
       # The thougth was to prevent syclic behaviour if a node has multiple parents
       # recursed_nodes = []
       for (child_node, val) in current_node.get_children():
-        (child_node_name, num_types) = get_node_name(node=child_node, num_types=num_types)
+        (child_node_name, _, num_types) = get_node_name(node=child_node, num_types=num_types)
         if child_node_name in accounted_nodes: 
           # Prevent cyclic behaviour
           continue
