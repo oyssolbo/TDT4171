@@ -20,7 +20,7 @@ class DecisionTree:
   def __init__(
         self,
         train_data_csv  : TextIO,
-        test_data_csv   : TextIO,
+        test_data_csv   : TextIO
       ) -> None:
 
     self.__training_nodes = self.extract_data(train_data_csv)
@@ -73,7 +73,7 @@ class DecisionTree:
 
         # Create a node with correct type
         data_node = nodes.DataNode(
-          data=-np.ones_like(data_node_list[0].get_data()),
+          data=-np.ones_like(data_node_list[0].get_data()), # -1 to represent plurality_node
           node_type=most_common_type,
           children=[]
         )
@@ -96,11 +96,12 @@ class DecisionTree:
 
       # Checking if all elements are equal
       if not np.all(class_arr == class_arr[0,0]):
+        # print(class_arr)
         return (False, None) # Last argument contains no information in this case
 
       # Create a node with correct type, since all have the same type
       data_node = nodes.DataNode(
-        data=-2*np.ones_like(data_node_list[0].get_data()),
+        data=-2*np.ones_like(data_node_list[0].get_data()), # -2 to represent check_classification
         node_type=class_arr[0,0],
         children=[]
       )
@@ -130,7 +131,10 @@ class DecisionTree:
       elif has_common_class:
         # print("has_common_class")
         return common_node
-      elif current_data_node_list[0].get_data().reshape((1, -1)).shape[1] == 0:
+      elif (
+        current_data_node_list[0].get_data().reshape((1, -1)).shape[1] == 0 or \
+        len(available_attributes) == 0
+      ):
         # attributes-list is empty
         # print("not current_data_node_list[0].get_data()")
         return plurarity_node(current_data_node_list)
@@ -146,7 +150,7 @@ class DecisionTree:
         available_attributes.remove(global_attribute) 
 
         root_node = nodes.DataNode(
-          data=-3*np.ones_like(current_data_node_list[0].get_data()),
+          data=-3*np.ones_like(current_data_node_list[0].get_data()), # -3 to represent else-block
           node_type=None,
           children=[],
           attribute=global_attribute 
@@ -211,9 +215,9 @@ class DecisionTree:
       ) -> None:
 
     def get_node_name(
-          node : nodes.DataNode
-        ) -> tuple:#[str, str]:
-
+          node      : nodes.DataNode,
+          num_types : list           
+        ) -> tuple:#[str, list]:
       data_type = node.get_type()
       attribute = node.get_attribute()
 
@@ -225,13 +229,17 @@ class DecisionTree:
       
       if data_type is not None:
         # Leaf node. Should not contain children
-        node_name = str(data_type)
+        # Here there is a bug when creating the nodes. Multiple leaf-nodes are given the same name,
+        # and as such, the algorithm is unable to generate multiple leaf nodes, as it cannot know which
+        # to refer to. Must add a
+        node_name = str(data_type) + "_" + str(num_types[int(data_type) - 1])
+        num_types[int(data_type) - 1] += 1 
         # node_label = node_name
       else:
         # Internal node. Should contain children
         node_name = "A" + str(attribute)
         # node_label = "A" + node_name
-      return node_name #(node_name, node_label)
+      return (node_name, num_types) #(node_name, node_label)
 
 
     def build_documented_tree(
@@ -239,6 +247,7 @@ class DecisionTree:
         current_node    : nodes.DataNode, 
         parent_node     : nodes.DataNode    = None,
         accounted_nodes : list              = [],
+        num_types       : list              = [],
         label           : str               = ""
       ) -> graphviz.Digraph:
 
@@ -255,16 +264,18 @@ class DecisionTree:
         -the nodes that are not accounted for, have only zeros as data. How can one get nodes with only
         zeros???????????? Could just occur random
       """
+      if not num_types:
+        num_types = [0] * (self.__max_val - self.__min_val + 1) 
 
       # Create node
-      current_node_name = get_node_name(node=current_node)
+      (current_node_name, num_types) = get_node_name(node=current_node, num_types=num_types)
       current_node_type = current_node.get_type() 
       tree.node(name=current_node_name, label=current_node_name)
 
       # Add edges to any potential parents
       if parent_node is not None:
         # Parent is an internal node
-        parent_node_name = get_node_name(node=parent_node)
+        (parent_node_name, _) = get_node_name(node=parent_node, num_types=[0] * (self.__max_val - self.__min_val + 1))
 
         tree.edge(tail_name=parent_node_name, head_name=current_node_name, label=label)
 
@@ -288,7 +299,7 @@ class DecisionTree:
       # The thougth was to prevent syclic behaviour if a node has multiple parents
       # recursed_nodes = []
       for (child_node, val) in current_node.get_children():
-        child_node_name = get_node_name(node=child_node)
+        (child_node_name, num_types) = get_node_name(node=child_node, num_types=num_types)
         if child_node_name in accounted_nodes: 
           # Prevent cyclic behaviour
           continue
@@ -304,7 +315,8 @@ class DecisionTree:
           tree=tree, 
           current_node=child_node, 
           parent_node=current_node,
-          accounted_nodes=accounted_nodes, # Now it is correct to use references
+          accounted_nodes=accounted_nodes, 
+          num_types=[0] * (self.__max_val - self.__min_val + 1),
           label=str(val)
         )         
       # assert len(recursed_nodes) == 2 or recursed_nodes in accounted_nodes or current_node_type is not None
@@ -335,6 +347,9 @@ class DecisionTree:
       accounted_nodes=[]
     )
     if not save_tree:
+      return
+    if sys.platform.startswith('win32'):
+      # The graphical part of graphwiz does somehow not work for me on windows
       return
     save_tree(tree=tree, show=show_tree)
 
@@ -466,7 +481,7 @@ if __name__ == '__main__':
     random_correct_arr[i] = int(random_result)
     expected_correct_arr[i] = int(expected_result)
 
-    if i % 50 == 0:
+    if i % 100 == 0:
       print(i / num_tests)
 
   # Save data permanently
@@ -511,5 +526,3 @@ if __name__ == '__main__':
   axs[1].hist(expected_correct_arr, bins=np.arange(12,29,1))
 
   plt.show()
-
-
