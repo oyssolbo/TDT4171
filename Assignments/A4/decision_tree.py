@@ -231,7 +231,8 @@ class DecisionTree:
         # Leaf node. Should not contain children
         # Here there is a bug when creating the nodes. Multiple leaf-nodes are given the same name,
         # and as such, the algorithm is unable to generate multiple leaf nodes, as it cannot know which
-        # to refer to. Must add a
+        # to refer to.
+        # After testing, this does not work...
         node_label = str(data_type)
         node_name = node_label + "_" + str(num_types[int(data_type) - 1])
         num_types[int(data_type) - 1] += 1 
@@ -239,7 +240,7 @@ class DecisionTree:
         # Internal node. Should contain children
         node_name = "A" + str(attribute)
         node_label = node_name
-      return (node_name, node_label, num_types) #(node_name, node_label)
+      return (node_name, node_label, num_types) 
 
 
     def build_documented_tree(
@@ -259,10 +260,6 @@ class DecisionTree:
 
       Theory:
         -the children have the same type - after testing: not correct theory
-
-      Observation:
-        -the nodes that are not accounted for, have only zeros as data. How can one get nodes with only
-        zeros???????????? Could just occur random
       """
       if not num_types:
         num_types = [0] * (self.__max_val - self.__min_val + 1) 
@@ -309,8 +306,6 @@ class DecisionTree:
           # Only add the attributes
           accounted_nodes.append(child_node_name)
         
-        # recursed_nodes.append(child_node)
-
         build_documented_tree(
           tree=tree, 
           current_node=child_node, 
@@ -319,7 +314,6 @@ class DecisionTree:
           num_types=[0] * (self.__max_val - self.__min_val + 1),
           label=str(val)
         )         
-      # assert len(recursed_nodes) == 2 or recursed_nodes in accounted_nodes or current_node_type is not None
 
       return tree
 
@@ -455,7 +449,7 @@ if __name__ == '__main__':
     test_data_csv=test_data
   )
 
-  # Iterating over the algorithm for 1000 iterations to create some data
+  # Iterating over the algorithm for n iterations to create some data
   for i in range(num_tests):
     random_tree.train_decision_tree(importance_func=random_importance_func)
     random_tree.document_tree(
@@ -481,7 +475,7 @@ if __name__ == '__main__':
     random_correct_arr[i] = int(random_result)
     expected_correct_arr[i] = int(expected_result)
 
-    if i % 100 == 0:
+    if i % 100 == 0 and i > 0:
       print(i / num_tests)
 
   # Save data permanently
