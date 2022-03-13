@@ -435,7 +435,7 @@ if __name__ == '__main__':
   random_importance_func = lambda x : importance_class.random(x)
   expected_information_importance_func = lambda x : importance_class.expected_information(x)
 
-  num_tests = 500 #5000
+  num_tests = 25000
   random_correct_arr = np.zeros(num_tests, dtype=int)
   expected_correct_arr = np.zeros(num_tests, dtype=int)
 

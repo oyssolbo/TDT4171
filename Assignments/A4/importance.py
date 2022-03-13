@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import nodes
 import random
@@ -110,4 +111,8 @@ class Importance:
         raise ValueError("Division by zero")
       gain_arr[0, col] = binary_entropy(probability=(total_num_pos / (total_num_pos + total_num_neg))) - remainder
     
-    return np.argmax(gain_arr)
+    optimal_attribute = np.argmax(gain_arr)
+    if type(optimal_attribute) is np.ndarray:
+      warnings.warn("Multiple equal attributes")
+      return optimal_attribute[0]
+    return optimal_attribute
