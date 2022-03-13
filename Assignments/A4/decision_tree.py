@@ -1,4 +1,5 @@
 import os
+from random import random
 import sys
 
 import numpy as np
@@ -13,6 +14,7 @@ import nodes
 
 import matplotlib.pyplot as plt
 import math
+import time
 
 from typing import Callable, TextIO
 
@@ -433,9 +435,12 @@ if __name__ == '__main__':
   random_importance_func = lambda x : importance_class.random(x)
   expected_information_importance_func = lambda x : importance_class.expected_information(x)
 
-  num_tests = 1 #5000
+  num_tests = 500 #5000
   random_correct_arr = np.zeros(num_tests, dtype=int)
   expected_correct_arr = np.zeros(num_tests, dtype=int)
+
+  random_cpu_count_arr = np.zeros(num_tests, dtype=int)
+  expected_cpu_count_arr = np.zeros(num_tests, dtype=int)
 
   # Random tree
   random_tree = DecisionTree(
@@ -451,6 +456,7 @@ if __name__ == '__main__':
 
   # Iterating over the algorithm for n iterations to create some data
   for i in range(num_tests):
+    cpu_count = time.perf_counter_ns()
     random_tree.train_decision_tree(importance_func=random_importance_func)
     random_tree.document_tree(
       root_node=None, 
@@ -460,7 +466,9 @@ if __name__ == '__main__':
       show_tree=True
     )
     random_result = random_tree.test_decision_tree()
+    random_count = time.perf_counter_ns() - cpu_count
 
+    cpu_count = time.perf_counter_ns()
     expected_information_tree.train_decision_tree(importance_func=expected_information_importance_func)
     expected_information_tree.document_tree(
       root_node=None, 
@@ -470,10 +478,14 @@ if __name__ == '__main__':
       show_tree=True
     )
     expected_result = expected_information_tree.test_decision_tree()
+    expected_count = time.perf_counter_ns() - cpu_count
 
     # Save data temporary
     random_correct_arr[i] = int(random_result)
     expected_correct_arr[i] = int(expected_result)
+
+    random_cpu_count_arr[i] = random_count
+    expected_cpu_count_arr[i] = expected_count
 
     if i % 100 == 0 and i > 0:
       print(i / num_tests)
@@ -486,8 +498,14 @@ if __name__ == '__main__':
   random_correct_mean = np.mean(random_correct_arr)
   random_correct_var = np.var(random_correct_arr)
 
+  random_cpu_count_mean = np.mean(random_cpu_count_arr)
+  random_cpu_count_var = np.var(random_cpu_count_arr)
+
   expected_correct_mean = np.mean(expected_correct_arr)
   expected_correct_var = np.var(expected_correct_arr)
+
+  expected_cpu_count_mean = np.mean(expected_cpu_count_arr)
+  expected_cpu_count_var = np.var(expected_cpu_count_arr)
 
   # Find percentile of times where the expected is better than the random
   num_random_similar = len(random_correct_arr[random_correct_arr == expected_correct_mean])
@@ -518,5 +536,19 @@ if __name__ == '__main__':
     )
   )
   axs[1].hist(expected_correct_arr, bins=np.arange(12,29,1))
+
+  print(
+    "Random cpu-count. Mean: {} Variance: {}".format(
+      random_cpu_count_mean, 
+      random_cpu_count_var
+    )
+  )
+
+  print(
+    "Expected cpu-count. Mean: {} Variance: {}".format(
+      expected_cpu_count_mean, 
+      expected_cpu_count_var
+    )
+  )
 
   plt.show()
