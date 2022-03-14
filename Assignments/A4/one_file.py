@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 
 import numpy as np
@@ -7,11 +8,14 @@ import csv
 import warnings
 import copy
 import collections
-import random
+
+import importance
+import nodes
 
 import matplotlib.pyplot as plt
 import math
 import time
+
 
 from typing import Callable, TextIO
 
@@ -364,10 +368,10 @@ class DecisionTree:
   def document_tree(
         self,
         root_node : DataNode  = None,
-        comment   : str             = "Decision tree",
-        id        : int             = 0,
-        save_tree : bool            = True,
-        show_tree : bool            = False
+        comment   : str       = "Decision tree",
+        id        : int       = 0,
+        save_tree : bool      = True,
+        show_tree : bool      = False
       ) -> None:
 
     def get_node_name(
@@ -385,9 +389,10 @@ class DecisionTree:
       
       if data_type is not None:
         # Leaf node. Should not contain children
-        # Here there is a bug when creating the  Multiple leaf-nodes are given the same name,
+        # Here there is a bug when creating the nodes. Multiple leaf-nodes are given the same name,
         # and as such, the algorithm is unable to generate multiple leaf nodes, as it cannot know which
-        # to refer to. Must add a
+        # to refer to.
+        # After testing, this does not work...
         node_label = str(data_type)
         node_name = node_label + "_" + str(num_types[int(data_type) - 1])
         num_types[int(data_type) - 1] += 1 
@@ -395,13 +400,13 @@ class DecisionTree:
         # Internal node. Should contain children
         node_name = "A" + str(attribute)
         node_label = node_name
-      return (node_name, node_label, num_types) #(node_name, node_label)
+      return (node_name, node_label, num_types) 
 
 
     def build_documented_tree(
         tree            : graphviz.Digraph, 
         current_node    : DataNode, 
-        parent_node     : DataNode    = None,
+        parent_node     : DataNode          = None,
         accounted_nodes : list              = [],
         num_types       : list              = [],
         label           : str               = ""
@@ -412,6 +417,9 @@ class DecisionTree:
       correct information. Some problems with the function, are:
         -will create syclic trees despite the nodes are not syclic
         -will not add all of the leaf-nodes
+
+      Theory:
+        -the children have the same type - after testing: not correct theory
       """
       if not num_types:
         num_types = [0] * (self.__max_val - self.__min_val + 1) 
@@ -585,7 +593,7 @@ if __name__ == '__main__':
   random_importance_func = lambda x : importance_class.random(x)
   expected_information_importance_func = lambda x : importance_class.expected_information(x)
 
-  num_tests = 500 #5000
+  num_tests = 25000
   random_correct_arr = np.zeros(num_tests, dtype=int)
   expected_correct_arr = np.zeros(num_tests, dtype=int)
 
