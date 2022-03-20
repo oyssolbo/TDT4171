@@ -6,7 +6,6 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
-from typing import Type
 from nltk.corpus import stopwords
 from sklearn import feature_extraction, naive_bayes, tree
 from sklearn.metrics import accuracy_score
@@ -184,6 +183,24 @@ if __name__ == '__main__':
 
   dt_training_results = dt_results[0,:]
   dt_testing_results = dt_results[1,:]
+
+  print(
+    "Normalized accuracies obtained for scikit naive bayesian: \n \
+    training_results: {} \n \
+    testing_results: {}".format(
+      nb_training_results,
+      nb_testing_results
+    )
+  )
+
+  print(
+    "Normalized accuracies obtained for scikit decision tree: \n \
+    training_results: {} \n \
+    testing_results: {}".format(
+      dt_training_results,
+      dt_testing_results
+    )
+  )
 
   plot_accuracies(
     training_results=nb_training_results, 
