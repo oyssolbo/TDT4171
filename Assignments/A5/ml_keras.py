@@ -7,7 +7,6 @@ import warnings
 
 from tensorflow import keras
 from keras import preprocessing, layers, models
-from nltk.corpus import stopwords
 
 class MLKeras:
   def __init__(
