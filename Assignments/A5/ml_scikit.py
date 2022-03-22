@@ -3,6 +3,7 @@ import os
 import sys 
 
 import pickle
+import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -13,33 +14,33 @@ from sklearn.metrics import accuracy_score
 class MLScikit:
   def __init__(
         self, 
-        filename      : str = 'data/scikit-learn-data.pickle',
-        num_features  : int = 14 
+        filename      : str = 'data/scikit-learn-data.pickle'
       ) -> None:
     self.__filename = os.path.join(sys.path[0], filename)
-    self.__num_features = num_features
+    self.__is_initialized = False
 
-    self.__initialize_data()
+    self.__data = self.__unpickle_data()
 
-  def __initialize_data(self) -> None:
+  def initialize_data(
+        self,
+        num_features : int = 14
+      ) -> None:
     """
-    Unpickles data and initializes the training and test-data
-    into arrays that could be trained on
+    Initializes the training and test-data into arrays that could 
+    be trained and tested on
     """
-    
-    data = self.__unpickle_data()
 
-    raw_x_train = data["x_train"]
-    raw_y_train = data["y_train"]
+    raw_x_train = self.__data["x_train"]
+    raw_y_train = self.__data["y_train"]
 
-    raw_x_test = data["x_test"]
-    raw_y_test = data["y_test"]
+    raw_x_test = self.__data["x_test"]
+    raw_y_test = self.__data["y_test"]
 
     stop_words = self.__get_stop_words()
 
     vectorizer = feature_extraction.text.HashingVectorizer(
       stop_words=stop_words,
-      n_features=2**self.__num_features,
+      n_features=2**num_features,
       binary=True
     )
 
@@ -48,6 +49,8 @@ class MLScikit:
 
     self.__x_test = vectorizer.transform(X=raw_x_test)
     self.__y_test = raw_y_test 
+
+    self.__is_initialized = True
 
   def __unpickle_data(self) -> dict:
     """
@@ -117,6 +120,10 @@ class MLScikit:
       -training_accuracy : Results from the training-set. Normalized to range [0, 1]
       -testing_accuracy  : Results from the testing-set. Normalized to range [0, 1]
     """    
+    if not self.__is_initialized:
+      warnings.warn("Data not initialized. Defaulting to 14 parameters")
+      self.initialize_data()
+
     # Unsure regarding the parameters - wanted to take these in as parameters
     classifier = naive_bayes.BernoulliNB() 
     return self.__train_classifier(classifier=classifier)
@@ -130,6 +137,10 @@ class MLScikit:
       -training_accuracy : Results from the training-set. Normalized to range [0, 1]
       -testing_accuracy  : Results from the testing-set. Normalized to range [0, 1]
     """
+    if not self.__is_initialized:
+      warnings.warn("Data not initialized. Defaulting to 14 parameters")
+      self.initialize_data()
+
     # Unsure regarding the parameters - wanted to take these in as parameters, such
     # that one could iteratively run different parameters
     classifier = tree.DecisionTreeClassifier(max_depth=14) 
@@ -161,10 +172,13 @@ if __name__ == '__main__':
   # naive_bayes_args = {}
   # decision_tree_args = {'max_depth': 14}
 
+  ml_scikit = MLScikit()
+
   for (idx, num_features) in enumerate(num_features_list):
     print("Running n_features = {}".format(num_features))
-    # The extraction process takes really long time??
-    ml_scikit = MLScikit(num_features=num_features)
+    
+    ml_scikit.initialize_data(num_features=num_features)
+    
     (nb_training_results, nb_testing_results) = ml_scikit.naive_bayes()
     (dt_training_results, dt_testing_results) = ml_scikit.decision_tree()
 
