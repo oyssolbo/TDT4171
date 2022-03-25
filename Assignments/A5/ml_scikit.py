@@ -128,7 +128,11 @@ class MLScikit:
     classifier = naive_bayes.BernoulliNB() 
     return self.__train_classifier(classifier=classifier)
 
-  def decision_tree(self, *args) -> tuple:
+  def decision_tree(
+        self, 
+        tree_depth : int = 14, 
+        *args
+      ) -> tuple:
     """
     Trains and tests a decision tree. Returns normnalized 
     values indicating how well the training and the testing performed
@@ -143,7 +147,7 @@ class MLScikit:
 
     # Unsure regarding the parameters - wanted to take these in as parameters, such
     # that one could iteratively run different parameters
-    classifier = tree.DecisionTreeClassifier(max_depth=14) 
+    classifier = tree.DecisionTreeClassifier(max_depth=tree_depth) 
     return self.__train_classifier(classifier=classifier)
 
 def plot_accuracies(
@@ -163,11 +167,17 @@ def plot_accuracies(
   plt.show()
 
 if __name__ == '__main__':
-  num_features_list = range(2, 22, 2)
-  
+  num_features_list = list(range(2, 4, 2))
+  tree_depths_list = list(range(2, 22, 2))
+
+  test_tree_depth = False
+
   # [training, testing]^T
   nb_results = np.zeros((2, len(num_features_list)))
-  dt_results = np.zeros((2, len(num_features_list)))
+  if not test_tree_depth:
+    dt_results = np.zeros((2, len(num_features_list)))
+  else:
+    dt_results = np.zeros((2, len(tree_depths_list)))
 
   # naive_bayes_args = {}
   # decision_tree_args = {'max_depth': 14}
@@ -178,16 +188,31 @@ if __name__ == '__main__':
     print("Running n_features = {}".format(num_features))
     
     ml_scikit.initialize_data(num_features=num_features)
-    
-    (nb_training_results, nb_testing_results) = ml_scikit.naive_bayes()
-    (dt_training_results, dt_testing_results) = ml_scikit.decision_tree()
 
-    nb_results[:, idx] = np.array([nb_training_results, nb_testing_results]).T
-    dt_results[:, idx] = np.array([dt_training_results, dt_testing_results]).T
+    if not test_tree_depth:
+      # This is the standard method, which by default runs the decision tree
+      # (unless otherwise specified) with 14 as a maximum dep
+
+      print("Naive bayes for n_features = {}".format(num_features))
+      (nb_training_results, nb_testing_results) = ml_scikit.naive_bayes()
+
+      print("Decision tree for n_features = {}".format(num_features))
+      (dt_training_results, dt_testing_results) = ml_scikit.decision_tree()
+
+      nb_results[:, idx] = np.array([nb_training_results, nb_testing_results]).T
+      dt_results[:, idx] = np.array([dt_training_results, dt_testing_results]).T
+
+    else:
+      assert len(num_features_list) == 1, "Code not set up for larger arrays"
+      for (depth_idx, depth) in enumerate(tree_depths_list):
+        print("Decision tree for depth = {}".format(depth))
+        (dt_training_results, dt_testing_results) = ml_scikit.decision_tree(tree_depth=depth)#None) # None for testing maximum depth
+        dt_results[:, depth_idx] = np.array([dt_training_results, dt_testing_results]).T
+        break
     
     # Temporary, such that one is not required to run through all iterations
-    if idx >= 0:
-      break
+    # if idx >= 0:
+    #   break
 
   np.savetxt(os.path.join(sys.path[0], "results/data/nb_results.txt"), nb_results)
   np.savetxt(os.path.join(sys.path[0], "results/data/dt_results.txt"), dt_results)
@@ -223,10 +248,20 @@ if __name__ == '__main__':
     classifier_str="scikit naive bayes"
   )
 
+  if not test_tree_depth:
+    feature_list = num_features_list
+  else:
+    if None in tree_depths_list:
+      # Set None-values to -1.0 to prevent errors during plotting
+      for (i, d) in enumerate(tree_depths_list):
+        tree_depths_list[i] = -1.0
+    feature_list = tree_depths_list
+
+
   plot_accuracies(
     training_results=dt_training_results, 
     testing_results=dt_testing_results,
-    feature_array=np.array(num_features_list),
+    feature_array=np.array(feature_list),
     classifier_str="scikit decision tree"
   )
 
