@@ -277,11 +277,205 @@ Evaluating model for 1 epochs
 4079/4079 [==============================] - 17s 4ms/step - loss: 10.8920 - accuracy: 0.2939
 [10.891979217529297, 0.29387563467025757]
 
+
+
+
+
+
+Short summary regarding the testing:
+It looks like the optimal results are obtained when one is running sigmoid function.
+
+The report should focus on the different testings that are performed:
+  - which output function is best with the corresponding results
+  - the effect of the different optimizers and lossfunctions
+  - the effect of the different layers, and how it was changed when increasing number of layers. 
+      Although this is a bit difficult to answer, as I have only tested using the LSTM, dense and 
+      embedded layer. There might be other layers that could increase the effectiveness of the training
+  - the effect of choosing the values that are selected
+
+
+20th iteration, resulting back to the sigmoid function
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 150s 12ms/step - loss: 0.2405 - accuracy: 0.9008
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 17s 4ms/step - loss: 0.1885 - accuracy: 0.9242
+[0.1884700357913971, 0.9241542220115662]
+
+
+
+21st iteration, reducing the number of layers down to just running the embedded layer, lstm layer
+and the dense layer. It is theorized that the previous iteration/test showed that this data is 
+relatively equivalent. What remains is therefore to explore the choice of the activation function 
+and the number of units for each layer
+
+output_embedded_dim = 32
+lstm_units = 32
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 148s 12ms/step - loss: 0.2309 - accuracy: 0.9058
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 16s 4ms/step - loss: 0.2072 - accuracy: 0.9233
+[0.20718835294246674, 0.9232961535453796]
+
+One can see that the accuracy during training was slightly improved, however the accuracy and loss 
+during testing, was relatively worse. This means that there occurs some effects that the deeper modell
+is better able to capture compared to this model, and that this model will be more likely to starting
+to become overfitted.
+
+
+
+22nd iteration, doubling the number of internal layers for both the lstm and the output of the 
+embedded
+
+output_embedded_dim = 64
+lstm_units = 64
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 194s 16ms/step - loss: 0.2917 - accuracy: 0.8800
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 23s 6ms/step - loss: 0.1870 - accuracy: 0.9236
+[0.186972975730896, 0.9236255884170532]
+
+Interesting to note the loss in the training accuracy, while maintaining the testing accuracy quite
+high. 
+
+What would be the effect (just for testing) if the model contained more layers but kept the 
+number of internal nodes as such?
+
+
+23rd iteration, adding more layers 
+
+
+output_embedded_dim = 64
+lstm_units = 64
+first_dense_units = 32
+second_dense_units = 32
+third_dense_units = 16
+
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 204s 16ms/step - loss: 0.2208 - accuracy: 0.9111
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 24s 6ms/step - loss: 0.1844 - accuracy: 0.9189
+[0.1843557208776474, 0.9188833236694336]
+
+
+
+24th iteration, reducing all of the layers to have a narrow network
+
+output_embedded_dim = 32
+lstm_units = 32
+first_dense_units = 16
+second_dense_units = 16
+third_dense_units = 8
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 149s 12ms/step - loss: 0.2217 - accuracy: 0.9097
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 18s 4ms/step - loss: 0.1895 - accuracy: 0.9264
+[0.189487487077713, 0.9264066219329834]
+
+
+
+25th iteration, setting all activation functions to be relu instead of just pass-through
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 149s 12ms/step - loss: 0.2273 - accuracy: 0.9073
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 17s 4ms/step - loss: 0.1889 - accuracy: 0.9277
+[0.18893255293369293, 0.9277166724205017]
+
+
+
+26th iteration, adding two more layers for the lols
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 168s 14ms/step - loss: 0.2319 - accuracy: 0.9058
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 18s 4ms/step - loss: 0.1861 - accuracy: 0.9280
+[0.1861400008201599, 0.9279618263244629]
+
+
+
+27th iteration, testing the loss-function kld
+
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 147s 12ms/step - loss: 0.0126 - accuracy: 0.7032
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 16s 4ms/step - loss: 1.1127e-05 - accuracy: 0.7061
+[1.1127447578473948e-05, 0.7061243653297424]
+
+
+
+28th iteration, testing MSE as loss funciton
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 163s 13ms/step - loss: 0.0720 - accuracy: 0.9034
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 17s 4ms/step - loss: 0.0543 - accuracy: 0.9280
+[0.05425582453608513, 0.928030788898468]
+
+Really nice loss here! Good for discussion (although it is way to many things to discuss...)
+But still nice to get a really low loss for almost no cost whatsofucking ever
+
+
+
+29th iteration, testing binary_focal_crossentropy
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 161s 13ms/step - loss: 0.0695 - accuracy: 0.8955
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 18s 4ms/step - loss: 0.0558 - accuracy: 0.9118
+[0.055794209241867065, 0.9117966890335083]
+
+
+30th iteration, testing huber loss function
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 155s 12ms/step - loss: 0.0357 - accuracy: 0.9044
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 17s 4ms/step - loss: 0.0276 - accuracy: 0.9248
+[0.02763703465461731, 0.9247594475746155]
+
+
+Question, as the loss for the later iterations have been amazing, how does that affect any overfitting?
+As the loss is getting down towards really low numbers, does this mean that the data is slightly 
+overfitted. Running the data with 10 iterations to check the effect
+
+Fitting data for 10 epochs
+Epoch 1/10
+12283/12283 [==============================] - 146s 12ms/step - loss: 0.0362 - accuracy: 0.9029
+Epoch 2/10
+12283/12283 [==============================] - 146s 12ms/step - loss: 0.0258 - accuracy: 0.9315
+Epoch 3/10
+12283/12283 [==============================] - 147s 12ms/step - loss: 0.0229 - accuracy: 0.9391
+Epoch 4/10
+12283/12283 [==============================] - 148s 12ms/step - loss: 0.0211 - accuracy: 0.9443
+Epoch 5/10
+12283/12283 [==============================] - 148s 12ms/step - loss: 0.0199 - accuracy: 0.9482
+Epoch 6/10
+12283/12283 [==============================] - 148s 12ms/step - loss: 0.0187 - accuracy: 0.9515
+Epoch 7/10
+12283/12283 [==============================] - 149s 12ms/step - loss: 0.0178 - accuracy: 0.9541
+Epoch 8/10
+12283/12283 [==============================] - 149s 12ms/step - loss: 0.0169 - accuracy: 0.9567
+Epoch 9/10
+12283/12283 [==============================] - 149s 12ms/step - loss: 0.0162 - accuracy: 0.9586
+Epoch 10/10
+12283/12283 [==============================] - 149s 12ms/step - loss: 0.0155 - accuracy: 0.9608
+Evaluating model for 10 epochs
+4079/4079 [==============================] - 17s 4ms/step - loss: 0.0214 - accuracy: 0.9449
+[0.021404903382062912, 0.9449236989021301]
+
+
 """
 
 """
 Questions regarding the performance of the algorithm:
   - why is the loss constantly 0.0000?
+    * stupid me! I should be shot for not understanding this earlier
   - how is the performance affected by the different layers?
   - what is the optimal way to create the different layers to achieve optimal
       performance?
@@ -381,28 +575,6 @@ class MLKeras:
   def __create_model(self) -> keras.models.Sequential:
     """
     Creates and returns a keras-model as RNN (LSTM)-network
-
-    According to my understanding of the task, the model should
-    consist of 
-      -an embedding layer
-      -a LSTM layer
-      -a dense layer
-    and one should thereafter only play around with the parameters
-    for the different layers.
-
-    The thing that bother me, is the dimensionality of the problem.
-    I cannot quite understand how to set up the input and output 
-    dimensionality correctly. Since it is only three layers in the model, 
-    this will simplify things a bit. However, I cannot quite understand 
-    how the information flow will be best in the model.
-    Also, when questioning the dimensionaility of the information flow,
-    how is the input structured? I cannot quite understand the meaning
-    of the input data and how to best use it. Pherhaps that is the intention
-    of the assignment however...
-
-    Have written some documentation for each of the layers, as well as 
-    the corresponding links to the documentation. This is to simplify
-    looking up the information later
     """
     print("Building sequential model")
     model = models.Sequential()
@@ -433,7 +605,7 @@ class MLKeras:
       )
     )
 
-    # # Trying with another LSTM layer
+    # # Trying with another LSTM layer - didn't work very well
     # model.add(
     #   layers.LSTM(
     #     units=lstm_units
@@ -442,41 +614,52 @@ class MLKeras:
 
     # Dense layer will implement an activation + bias function.
     # https://keras.io/api/layers/core_layers/dense/
-    model.add(
-      layers.Dense(
-        units=first_dense_units,
-        activation="relu" 
-      )
-    )
 
-    model.add(
-      layers.Dense(
-        units=second_dense_units
-      )
-    )
+    # # Extra layers added for science
+    # model.add(
+    #   layers.Dense(
+    #     units=first_dense_units,
+    #     activation="relu" 
+    #   )
+    # )
 
-    model.add(
-      layers.Dense(
-        units=third_dense_units
-      )
-    )
+    # model.add(
+    #   layers.Dense(
+    #     units=second_dense_units,
+    #     activation="relu" 
+    #   )
+    # )
 
-    """
-    You bloody idiot! Required to have only a single dense output-layer,
-    as it should only return a single classification! If there were 
-    multiple classifications, the dense layer would have multiple outputs
-    """
+    # model.add(
+    #   layers.Dense(
+    #     units=third_dense_units,
+    #     activation="relu" 
+    #   )
+    # )
+
+    # model.add(
+    #   layers.Dense(
+    #     units=4 
+    #   )
+    # )
+
+    # model.add(
+    #   layers.Dense(
+    #     units=2
+    #   )
+    # )
+
     model.add(
       layers.Dense(
         units=1,
-        activation="swish" # To get output to sum to 1 (if using softmax)
+        activation="tanh" 
       )
     )
 
-    # Using the parameters given in the example on blackboard
+    # https://www.tensorflow.org/api_docs/python/tf/keras/losses
     model.compile(
       optimizer='adam',
-      loss='binary_crossentropy',  
+      loss='huber',  
       metrics=['accuracy']
     )
     model.summary()
@@ -516,4 +699,4 @@ class MLKeras:
 
 if __name__ == '__main__':
   ml_keras = MLKeras()
-  print(ml_keras.lstm(num_epochs=1))
+  print(ml_keras.lstm(num_epochs=10))
