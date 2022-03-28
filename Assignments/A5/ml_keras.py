@@ -658,8 +658,8 @@ class MLKeras:
 
     # Information regarding the size of the model - uncertain how 
     # to quantify these values...
-    output_embedded_dim = 16
-    lstm_units = 16
+    output_embedded_dim = 64
+    lstm_units = 32
     first_dense_units = 16
     second_dense_units = 16
     third_dense_units = 8
@@ -693,26 +693,26 @@ class MLKeras:
     # https://keras.io/api/layers/core_layers/dense/
 
     # Extra layers added for science
-    model.add(
-      layers.Dense(
-        units=first_dense_units,
-        activation="tanh" 
-      )
-    )
+    # model.add(
+    #   layers.Dense(
+    #     units=first_dense_units,
+    #     activation="tanh" 
+    #   )
+    # )
 
-    model.add(
-      layers.Dense(
-        units=second_dense_units,
-        activation="tanh" 
-      )
-    )
+    # model.add(
+    #   layers.Dense(
+    #     units=second_dense_units,
+    #     activation="tanh" 
+    #   )
+    # )
 
-    model.add(
-      layers.Dense(
-        units=third_dense_units,
-        activation="tanh" 
-      )
-    )
+    # model.add(
+    #   layers.Dense(
+    #     units=third_dense_units,
+    #     activation="tanh" 
+    #   )
+    # )
 
     # model.add(
     #   layers.Dense(
@@ -776,4 +776,4 @@ class MLKeras:
 
 if __name__ == '__main__':
   ml_keras = MLKeras()
-  print(ml_keras.lstm(num_epochs=1))
+  print(ml_keras.lstm(num_epochs=10))
