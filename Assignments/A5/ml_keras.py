@@ -696,21 +696,21 @@ class MLKeras:
     model.add(
       layers.Dense(
         units=first_dense_units,
-        activation="relu" 
+        activation="tanh" 
       )
     )
 
     model.add(
       layers.Dense(
         units=second_dense_units,
-        activation="relu" 
+        activation="tanh" 
       )
     )
 
     model.add(
       layers.Dense(
         units=third_dense_units,
-        activation="relu" 
+        activation="tanh" 
       )
     )
 
