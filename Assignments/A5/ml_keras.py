@@ -470,6 +470,83 @@ Evaluating model for 10 epochs
 [0.021404903382062912, 0.9449236989021301]
 
 
+
+
+Evaluating the effect using the different layers:
+
+3 layers (embedded - lstm - dense): 32 - 32 - 1
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 155s 12ms/step - loss: 0.0357 - accuracy: 0.9044
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 17s 4ms/step - loss: 0.0276 - accuracy: 0.9248
+[0.02763703465461731, 0.9247594475746155]
+
+3 layers (embedded - lstm - dense): 32 - 16 - 1
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 154s 12ms/step - loss: 0.0362 - accuracy: 0.9029
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 13s 3ms/step - loss: 0.0271 - accuracy: 0.9266
+[0.027108779177069664, 0.9265981316566467]
+
+3 layers (embedded - lstm - dense): 64 - 16 - 1
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 159s 13ms/step - loss: 0.0523 - accuracy: 0.8572
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 14s 3ms/step - loss: 0.0319 - accuracy: 0.9123
+[0.03192984685301781, 0.9123406410217285]
+
+3 layers (embedded - lstm - dense): 64 - 32 - 1
+
+12283/12283 [==============================] - 164s 13ms/step - loss: 0.0346 - accuracy: 0.9080
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 18s 4ms/step - loss: 0.0256 - accuracy: 0.9312
+[0.025616195052862167, 0.9311871528625488]
+
+
+3 layers (embedded - lstm - dense): 64 - 64 - 1
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 219s 18ms/step - loss: 0.0473 - accuracy: 0.8732
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 25s 6ms/step - loss: 0.0307 - accuracy: 0.9190
+[0.0307033471763134, 0.9189829230308533]
+
+
+3 layers (embedded - lstm - dense): 16 - 16 - 1
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 155s 12ms/step - loss: 0.0373 - accuracy: 0.8989
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 14s 3ms/step - loss: 0.0289 - accuracy: 0.9233
+[0.028860365971922874, 0.9232578277587891]
+
+
+4 layers: 64 - 32 - 16 - 1
+Fitting data for 1 epochs
+12283/12283 [==============================] - 168s 14ms/step - loss: 0.0458 - accuracy: 0.8743
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 18s 4ms/step - loss: 0.0320 - accuracy: 0.9134
+[0.03198300302028656, 0.913428544998169]
+
+6 layers: 32 - 32 - 16 - 16 - 8 - 1
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 163s 13ms/step - loss: 0.0360 - accuracy: 0.9039
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 17s 4ms/step - loss: 0.0289 - accuracy: 0.9227
+[0.028918294236063957, 0.9226832389831543]
+
+6 layers: 16 - 16 - 16 - 16 - 8 - 1
+
+Fitting data for 1 epochs
+12283/12283 [==============================] - 154s 12ms/step - loss: 0.0370 - accuracy: 0.9007
+Evaluating model for 1 epochs
+4079/4079 [==============================] - 14s 3ms/step - loss: 0.0289 - accuracy: 0.9208
+[0.028857696801424026, 0.9207985997200012]
+
 """
 
 """
@@ -581,8 +658,8 @@ class MLKeras:
 
     # Information regarding the size of the model - uncertain how 
     # to quantify these values...
-    output_embedded_dim = 32
-    lstm_units = 32
+    output_embedded_dim = 16
+    lstm_units = 16
     first_dense_units = 16
     second_dense_units = 16
     third_dense_units = 8
@@ -615,27 +692,27 @@ class MLKeras:
     # Dense layer will implement an activation + bias function.
     # https://keras.io/api/layers/core_layers/dense/
 
-    # # Extra layers added for science
-    # model.add(
-    #   layers.Dense(
-    #     units=first_dense_units,
-    #     activation="relu" 
-    #   )
-    # )
+    # Extra layers added for science
+    model.add(
+      layers.Dense(
+        units=first_dense_units,
+        activation="relu" 
+      )
+    )
 
-    # model.add(
-    #   layers.Dense(
-    #     units=second_dense_units,
-    #     activation="relu" 
-    #   )
-    # )
+    model.add(
+      layers.Dense(
+        units=second_dense_units,
+        activation="relu" 
+      )
+    )
 
-    # model.add(
-    #   layers.Dense(
-    #     units=third_dense_units,
-    #     activation="relu" 
-    #   )
-    # )
+    model.add(
+      layers.Dense(
+        units=third_dense_units,
+        activation="relu" 
+      )
+    )
 
     # model.add(
     #   layers.Dense(
@@ -699,4 +776,4 @@ class MLKeras:
 
 if __name__ == '__main__':
   ml_keras = MLKeras()
-  print(ml_keras.lstm(num_epochs=10))
+  print(ml_keras.lstm(num_epochs=1))
