@@ -208,10 +208,6 @@ class MLKeras:
     # giving such reviews. Therefore, using post-padding, as it will likely
     # maintain more of the information in the sentences. Would be interesting
     # to compare the difference between pre and post-padding 
-
-    # Exception: np.float64 cannot be interpreted as an integer
-    # Must create x-data to be a list of integers! 
-    # Error caused by the max-len not being an integer
     print("Padding data")
     self.__x_train = preprocessing.sequence.pad_sequences(
       sequences=raw_x_train, 
@@ -250,11 +246,12 @@ class MLKeras:
     """
     Creates and returns a keras-model as RNN (LSTM)-network
     """
-    print("Building sequential model")
+    num_layers = 3
     model = models.Sequential()
+    assert num_layers >=3, "Requires at least 3 layers"
 
-    # Information regarding the size of the model - uncertain how 
-    # to quantify these values...
+    print("Building sequential model with {} layers".format(num_layers))
+
     output_embedded_dim = 16
     lstm_units = 16
     first_dense_units = 16
@@ -290,38 +287,43 @@ class MLKeras:
     # https://keras.io/api/layers/core_layers/dense/
 
     # Extra layers added for science
-    model.add(
-      layers.Dense(
-        units=first_dense_units,
-        activation="tanh" 
+    if num_layers >= 4:
+      model.add(
+        layers.Dense(
+          units=first_dense_units,
+          activation="tanh" 
+        )
       )
-    )
 
-    model.add(
-      layers.Dense(
-        units=second_dense_units,
-        activation="tanh" 
+    if num_layers >= 5:
+      model.add(
+        layers.Dense(
+          units=second_dense_units,
+          activation="tanh" 
+        )
       )
-    )
 
-    model.add(
-      layers.Dense(
-        units=third_dense_units,
-        activation="tanh" 
+    if num_layers >= 6:
+      model.add(
+        layers.Dense(
+          units=third_dense_units,
+          activation="tanh" 
+        )
       )
-    )
 
-    # model.add(
-    #   layers.Dense(
-    #     units=4 
-    #   )
-    # )
+    if num_layers >= 7:
+      model.add(
+        layers.Dense(
+          units=4 
+        )
+      )
 
-    # model.add(
-    #   layers.Dense(
-    #     units=2
-    #   )
-    # )
+    if num_layers >= 8:
+      model.add(
+        layers.Dense(
+          units=2
+        )
+      )
 
     model.add(
       layers.Dense(
