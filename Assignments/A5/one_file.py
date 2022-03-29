@@ -247,16 +247,16 @@ class MLKeras:
     Creates and returns a keras-model as RNN (LSTM)-network
     """
     num_layers = 3
-    model = models.Sequential()
-    assert num_layers >=3, "Requires at least 3 layers"
-
-    print("Building sequential model with {} layers".format(num_layers))
-
     output_embedded_dim = 16
     lstm_units = 16
     first_dense_units = 16
     second_dense_units = 16
     third_dense_units = 8
+
+    print("Building sequential model with {} layers".format(num_layers))
+
+    model = models.Sequential()
+    assert num_layers >=3, "Requires at least 3 layers"
 
     # Embedded layer will turn the indeces into a dense vector of 
     # fixed size. Requires a fixed range on the input
