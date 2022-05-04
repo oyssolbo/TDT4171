@@ -43,9 +43,6 @@ class MLKeras:
     raw_x_train = [[int(x) for x in x_list] for x_list in raw_x_train]
     raw_x_test = [[int(x) for x in x_list] for x_list in raw_x_test]
 
-    # raw_y_train = [int(y) for y in raw_y_train]
-    # raw_y_test = [int(y) for y in raw_y_test]
-
     # Padding the sequences to match a given length
     if self.__maxlen is None and not self.__optimize:
       warnings.warn("No length is assigned for padding! Will result in slower computation.")
